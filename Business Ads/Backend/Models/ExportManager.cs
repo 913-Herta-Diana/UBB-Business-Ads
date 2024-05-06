@@ -1,69 +1,24 @@
-﻿// <copyright file="IPDFExporter.xaml.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
-// </copyright>
+﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Formats.Asn1;
+using System.Globalization;
+using System.Linq;
+using System.Net.Mail;
+using System.Net;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace Frontend
+using CsvHelper;
+using Syncfusion.Pdf;
+using Syncfusion.Pdf.Graphics;
+
+namespace Backend.Models
 {
-    using System.Drawing;
-    using System.Globalization;
-    using System.IO;
-    using System.Net;
-    using System.Net.Mail;
-    using System.Windows;
-    using CsvHelper;
-    using Frontend.Export;
-    using ScottPlot.Panels;
-    using Syncfusion.Pdf;
-    using Syncfusion.Pdf.Graphics;
-    using static Frontend.ExportWindow;
-
-    /// <summary>
-    /// Interaction logic for Window1.xaml.
-    /// </summary>
-    ///
-    public interface IPDFExporter
-    {
-        void ExportPDF(
-            AdvertisementStats stats,
-            User user,
-            int fontSize,
-            int fontIndex,
-            int colorIndex,
-            bool impressionsChecked,
-            bool clicksChecked,
-            bool buysChecked,
-            bool timeChecked,
-            bool ctrChecked,
-            bool dateChecked,
-            bool signatureChecked,
-            bool recipientChecked,
-            string recipientInput,
-            bool emailButtonChecked,
-            bool downloadButtonChecked);
-    }
-
-    public interface ICSVExporter
-    {
-        void ExportCSV(
-            AdvertisementStats stats,
-            bool impressionsChecked,
-            bool clicksChecked,
-            bool buysChecked,
-            bool ctrChecked,
-            bool timeChecked,
-            string outputPath,
-            string emailRecipient);
-    }
-
-    public interface IEmailSender
-    {
-        Task SendDocEmailAsync(string recipient, string filename);
-    }
-
     public class ExportManager : IPDFExporter, ICSVExporter, IEmailSender
     {
         public void ExportPDF(
-            AdvertisementStats stats,
+            AdvertisementStatistics stats,
             User user,
             int fontSize,
             int fontIndex,
@@ -156,7 +111,7 @@ namespace Frontend
             if (signatureChecked == true)
             {
                 graphics.DrawString("Signature:", font, color, new PointF(page.Size.Width - 200, page.Size.Height - 120));
-                graphics.DrawString(user.Name, font, color, new PointF(page.Size.Width - 200, page.Size.Height - 100));
+                graphics.DrawString(user.Username, font, color, new PointF(page.Size.Width - 200, page.Size.Height - 100));
             }
 
             if (recipientChecked == true)
@@ -182,7 +137,7 @@ namespace Frontend
         }
 
         public void ExportCSV(
-            AdvertisementStats stats,
+            AdvertisementStatistics stats,
             bool impressionsChecked,
             bool clicksChecked,
             bool buysChecked,
@@ -194,7 +149,7 @@ namespace Frontend
             using (var writer = new StreamWriter(outputPath))
             using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
             {
-                List<AdvertisementStats> records = new List<AdvertisementStats> { stats };
+                List<AdvertisementStatistics> records = new List<AdvertisementStatistics> { stats };
 
                 foreach (var record in records)
                 {
@@ -256,125 +211,6 @@ namespace Frontend
 
             mail.Attachments.Add(new Attachment(filename));
             return client.SendMailAsync(mail);
-        }
-    }
-
-    public class AdvertisementStats
-    {
-        public AdvertisementStats(int views, int clicks, int buys, int time)
-        {
-            this.Views = views;
-            this.Clicks = clicks;
-            this.Buys = buys;
-            this.Time = time;
-        }
-
-        public int Views { get; set; }
-
-        public int Clicks { get; set; }
-
-        public int Buys { get; set; }
-
-        public int Time { get; set; }
-    }
-
-    public class User
-    {
-        public User(string name)
-        {
-            this.Name = name;
-        }
-
-        public string Name { get; set; }
-    }
-
-    public partial class ExportWindow : Window
-    {
-        public Window MainWindow;
-        ExportManager exportManager;
-
-        AdvertisementStats stats = new AdvertisementStats(1000, 100, 5, 30);
-        User user = new User("Andrew Stone");
-
-        public ExportWindow()
-        {
-            this.InitializeComponent();
-
-            this.Closed += (sender, eventData) =>
-            {
-                this.MainWindow.Show();
-            };
-        }
-
-        private void ExportButton_Click(object sender, RoutedEventArgs e)
-        {
-            int fontIndex = this.FontBox.SelectedIndex;
-            int colorIndex = this.ColorBox.SelectedIndex;
-            int fontSize = int.Parse(this.SizeInput.Text);
-            bool impressionsChecked = this.ImpressionsCheck.IsChecked == true;
-            bool clicksChecked = this.ClicksCheck.IsChecked == true;
-            bool buysChecked = this.BuysCheck.IsChecked == true;
-            bool timeChecked = this.TimeCheck.IsChecked == true;
-            bool ctrChecked = this.CTRCheck.IsChecked == true;
-            bool dateChecked = this.DateCheck.IsChecked == true;
-            bool signatureChecked = this.SignatureCheck.IsChecked == true;
-            bool recipientChecked = this.RecipientCheck.IsChecked == true;
-            string recipientInput = this.RecipientInput.Text;
-            bool emailButtonChecked = this.EmailButton1.IsChecked == true;
-            bool downloadButtonChecked = this.DownloadButton1.IsChecked == true;
-            string outputPath = "C:\\Users\\User\\Downloads\\output.csv";
-            string emailRecipient = this.EmailInput1.Text;
-
-            if (this.Radio7.IsChecked == true)
-            {
-                this.exportManager.ExportPDF(this.stats,
-                    this.user,
-                    fontSize,
-                    fontIndex,
-                    colorIndex,
-                    impressionsChecked,
-                    clicksChecked,
-                    buysChecked,
-                    timeChecked,
-                    ctrChecked,
-                    dateChecked,
-                    signatureChecked,
-                    recipientChecked,
-                    recipientInput,
-                    emailButtonChecked,
-                    downloadButtonChecked);
-            }
-
-            if (this.Radio5.IsChecked == true)
-            {
-                this.exportManager.ExportCSV(
-                    this.stats,
-                    impressionsChecked,
-                    clicksChecked,
-                    buysChecked,
-                    ctrChecked,
-                    timeChecked,
-                    outputPath,
-                    emailRecipient);
-            }
-
-            this.ConfirmExport();
-        }
-
-        public void ConfirmExport()
-        {
-            ExportSucces exportSucces = new ()
-            {
-                MainWindow = this.MainWindow,
-            };
-            exportSucces.Show();
-            this.Hide();
-        }
-
-        private void ReturnButton1_Click(object sender, RoutedEventArgs e)
-        {
-            this.MainWindow.Show();
-            this.Close();
         }
     }
 }
