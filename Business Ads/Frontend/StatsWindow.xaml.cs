@@ -15,6 +15,7 @@ namespace Frontend
     public partial class StatsWindow : Window
     {
         private Window mainWindow;
+
         public StatsWindow()
         {
             this.InitializeComponent();

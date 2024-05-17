@@ -4,12 +4,24 @@
 
 namespace Backend.Repositories
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Data;
+    using System.Data.Common;
+    using System.Data.SqlClient;
+    using System.Linq;
+    using System.Reflection.Metadata.Ecma335;
+    using System.Security.Principal;
+    using System.Text;
+    using System.Threading.Tasks;
     using Backend.Models;
     using Backend.Services;
 
     public class AccountRepository : IAccountRepository
     {
-        private readonly DataEncryptionService encryptionService = new ();
+        private DatabaseConnection databaseConnection = new DatabaseConnection();
+        private readonly SqlDataAdapter adapter = new SqlDataAdapter();
+        private readonly DataEncryptionService encryptionService = new DataEncryptionService();
         private BankAccount bankAccount = new BankAccount();
         private string? emailKey;
         private string? nameKey;
@@ -37,16 +49,44 @@ namespace Backend.Repositories
         {
             get
             {
-                string? decryptedEmail = encryptionService.Decrypt(bankAccount.Email!, emailKey!);
-                string? decryptedName = encryptionService.Decrypt(bankAccount.Name!, nameKey!);
-                string? decryptedSurname = encryptionService.Decrypt(bankAccount.Surname!, surnameKey!);
-                string? decryptedPhoneNumber = encryptionService.Decrypt(bankAccount.PhoneNumber!, phoneNumberKey!);
-                string? decryptedCounty = encryptionService.Decrypt(bankAccount.County!, countyKey!);
-                string? decryptedCity = encryptionService.Decrypt(bankAccount.City!, cityKey!);
-                string? decryptedAddress = encryptionService.Decrypt(bankAccount.Address!, addressKey!);
-                string? decryptedNumber = encryptionService.Decrypt(bankAccount.Number!, numberKey!);
-                string? decryptedHolderName = encryptionService.Decrypt(bankAccount.HolderName!, holderNameKey!);
-                string? decryptedExpiryDate = encryptionService.Decrypt(bankAccount.ExpiryDate!, expirationDateKey!);
+                databaseConnection.OpenConnection();
+                SqlDataAdapter dataAdapter = new SqlDataAdapter();
+                DataSet dataSet = new DataSet();
+                string query = "SELECT * FROM ACCOUNTS";
+                SqlCommand command = new SqlCommand(query, databaseConnection.SqlConnection);
+                dataAdapter.SelectCommand = command;
+                dataAdapter.SelectCommand.ExecuteNonQuery();
+                dataAdapter.Fill(dataSet);
+
+                if (dataSet.Tables[0].Rows.Count > 0)
+                {
+                    DataRow dataRow = dataSet.Tables[0].Rows[0];
+                    bankAccount = new BankAccount
+                    {
+                        Email = dataRow["Email"].ToString(),
+                        Name = dataRow["Name"].ToString(),
+                        Surname = dataRow["Surname"].ToString(),
+                        PhoneNumber = dataRow["PhoneNumber"].ToString(),
+                        County = dataRow["County"].ToString(),
+                        City = dataRow["City"].ToString(),
+                        Address = dataRow["Address"].ToString(),
+                        Number = dataRow["Number"].ToString(),
+                        HolderName = dataRow["HolderName"].ToString(),
+                        ExpiryDate = dataRow["ExpiryDate"].ToString(),
+                    };
+                }
+                databaseConnection.CloseConnection();
+
+                string? decryptedEmail = encryptionService.Decrypt(this.bankAccount.Email!, emailKey!);
+                string? decryptedName = encryptionService.Decrypt(this.bankAccount.Name!, nameKey!);
+                string? decryptedSurname = encryptionService.Decrypt(this.bankAccount.Surname!, surnameKey!);
+                string? decryptedPhoneNumber = encryptionService.Decrypt(this.bankAccount.PhoneNumber!, phoneNumberKey!);
+                string? decryptedCounty = encryptionService.Decrypt(this.bankAccount.County!, countyKey!);
+                string? decryptedCity = encryptionService.Decrypt(this.bankAccount.City!, cityKey!);
+                string? decryptedAddress = encryptionService.Decrypt(this.bankAccount.Address!, addressKey!);
+                string? decryptedNumber = encryptionService.Decrypt(this.bankAccount.Number!, numberKey!);
+                string? decryptedHolderName = encryptionService.Decrypt(this.bankAccount.HolderName!, holderNameKey!);
+                string? decryptedExpiryDate = encryptionService.Decrypt(this.bankAccount.ExpiryDate!, expirationDateKey!);
 
                 return new BankAccount
                 {
@@ -108,6 +148,22 @@ namespace Backend.Repositories
                     HolderName = encryptedHolderName,
                     ExpiryDate = encryptedExpiryDate,
                 };
+
+                databaseConnection.OpenConnection();
+                string query = "INSERT INTO ACCOUNTS (Email, Name, Surname, PhoneNumber, County, City, Address, Number, HolderName, ExpiryDate) VALUES (@email, @name, @surname, @phoneNumber, @county, @city, @address, @number, @holderName, @expiryDate)";
+                SqlCommand command = new SqlCommand(query, databaseConnection.SqlConnection);
+                command.Parameters.AddWithValue("@email", encryptedEmail);
+                command.Parameters.AddWithValue("@name", encryptedName);
+                command.Parameters.AddWithValue("@surname", encryptedSurname);
+                command.Parameters.AddWithValue("@phoneNumber", encryptedPhoneNumber);
+                command.Parameters.AddWithValue("@county", encryptedCounty);
+                command.Parameters.AddWithValue("@city", encryptedCity);
+                command.Parameters.AddWithValue("@address", encryptedAddress);
+                command.Parameters.AddWithValue("@number", encryptedNumber);
+                command.Parameters.AddWithValue("@holderName", encryptedHolderName);
+                command.Parameters.AddWithValue("@expiryDtae", encryptedExpiryDate);
+                command.ExecuteNonQuery();
+                databaseConnection.CloseConnection();
             }
         }
     }
