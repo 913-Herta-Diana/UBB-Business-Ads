@@ -14,6 +14,7 @@
 	
   <ItemGroup>
     <PackageReference Include="CsvHelper" Version="32.0.0" />
+    <PackageReference Include="EntityFramework" Version="6.4.4" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
     <None Remove="PaymentsAndBillings\doggo.png" />
     <None Remove="stylecop.json" />

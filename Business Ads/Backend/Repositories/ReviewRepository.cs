@@ -4,14 +4,28 @@
 
 namespace Backend.Repositories
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Data;
+    using System.Data.Common;
+    using System.Data.SqlClient;
+    using System.Linq;
+    using System.Reflection.Metadata.Ecma335;
+    using System.Security.Principal;
+    using System.Text;
+    using System.Threading.Tasks;
     using System.Xml;
     using System.Xml.Serialization;
     using Backend.Controllers;
     using Backend.Models;
+    using Backend.Services;
+
     public class ReviewRepository : INterfaceReview<ReviewClass>
     {
         private readonly string xmlFilePath;
         private List<ReviewClass> reviewList;
+        private DatabaseConnection databaseConnection = new DatabaseConnection();
+        private readonly SqlDataAdapter adapter = new SqlDataAdapter();
 
         public ReviewRepository()
         {
