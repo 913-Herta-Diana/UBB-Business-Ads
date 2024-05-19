@@ -12,12 +12,12 @@ namespace Backend.Services
     {
         private static readonly FAQService InstanceValue = new ();
         private readonly List<string> topics = new ();
-        private readonly FakeFAQRepository repository;
+        private readonly FAQRepository repository;
         private readonly List<FAQ> submittedQuestions;
 
         public FAQService()
         {
-            this.repository = new FakeFAQRepository();
+            this.repository = new FAQRepository();
             this.submittedQuestions = new ();
         }
 
@@ -48,6 +48,15 @@ namespace Backend.Services
         public void AddSubmittedQuestion(FAQ newQuestion)
         {
             this.submittedQuestions.Add(newQuestion);
+        }
+
+        public void DeleteFAQ(int id)
+        {
+            FAQ faqToDelete = this.repository.GetFAQList().FirstOrDefault(f => f.Id == id);
+            if (faqToDelete != null)
+            {
+                this.repository.DeleteFAQ(faqToDelete); // Delete from the database
+            }
         }
 
         public List<FAQ> GetSubmittedQuestions()

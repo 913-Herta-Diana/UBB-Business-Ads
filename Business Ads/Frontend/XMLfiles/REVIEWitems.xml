@@ -32,4 +32,8 @@
     <User>Dan Oliver</User>
     <Review>feedback bun</Review>
   </ReviewClass>
+  <ReviewClass>
+    <User>Dan Oliver</User>
+    <Review>test db</Review>
+  </ReviewClass>
 </Reviews>

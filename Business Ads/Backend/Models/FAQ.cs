@@ -6,7 +6,6 @@ namespace Backend.Models
 {
     public class FAQ
     {
-        private static int lastID = 0;
         private int id;
         private string question;
         private string answer;
@@ -17,7 +16,6 @@ namespace Backend.Models
         /// </summary>
         public FAQ()
         {
-            this.id = ++lastID;
             this.question = string.Empty;
             this.answer = string.Empty;
             this.topic = string.Empty;
@@ -25,7 +23,6 @@ namespace Backend.Models
 
         public FAQ(string question, string answer, string topic)
         {
-            this.id = ++lastID;
             this.question = question;
             this.answer = answer;
             this.topic = topic;
