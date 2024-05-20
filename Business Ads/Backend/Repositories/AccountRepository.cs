@@ -162,7 +162,7 @@ namespace Backend.Repositories
                 command.Parameters.AddWithValue("@number", encryptedNumber);
                 command.Parameters.AddWithValue("@holderName", encryptedHolderName);
                 command.Parameters.AddWithValue("@expiryDate", encryptedExpiryDate);
-                command.ExecuteNonQuery();
+                // command.ExecuteNonQuery();
                 databaseConnection.CloseConnection();
             }
         }

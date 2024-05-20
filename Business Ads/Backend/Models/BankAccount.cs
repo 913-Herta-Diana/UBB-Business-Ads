@@ -2,12 +2,16 @@
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
+using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
+
 namespace Backend.Models
 {
-    using System.ComponentModel.DataAnnotations;
-
+    [PrimaryKey(nameof(Id))]
     public class BankAccount
     {
+        public int Id { get; set; }
+
         public string? Email { get; set; }
 
         public string? Name { get; set; }
