@@ -1,8 +1,7 @@
 ﻿using Backend.Models;
-using Backend.Repositories;
 using Backend.Services;
 
-namespace Backend.Tests.Fakes
+namespace Backend.Repositories
 {
     public class FakeAccountRepository : IAccountRepository
     {
